@@ -35,6 +35,7 @@ deserialize(JSオブジェクト) // '定義テキスト'
 型|和名|コード例
 --|----|--------
 `2DArray`|二次元配列|`[['A','B'],['C','D'],...]`
+`SetArray`|一意配列|`[...new Set(['A','B','A','C'])]`
 `ObjectArray`|オブジェクト配列|`[{name:'山田', age:12},...]`
 `NamedArray`|名前付き配列|`{names:['name','age'], types:['str','int'], validates:[(v)=>0<v.length, (v)=>0<=v], values:['山田',12]}`
 `2DNamedArray`|二次元配列|`{names:['name','age'], types:['str','int'], validates:[...], values:[['A','B'],['C','D'],...]}`
@@ -57,6 +58,8 @@ deserialize(JSオブジェクト) // '定義テキスト'
 略1|略3|全名
 ---|---|----
 `A`|`2a`,`2da`|`2DArray`
+`g`|`grid`|`2DArray`
+`sa`|`sary`|`SetArray`
 `O`|`oa`|`ObjectArray`
 `na`|`nary`|`NamedArray`
 `2na`|`2nary`|`2DNamedArray`
@@ -572,6 +575,18 @@ store.serialize('ary() 山田 鈴木') // ['山田','鈴木']
 ```
 ```javascript
 store.deserialize(['山田','鈴木']) // 'ary() 山田 鈴木'
+```
+
+　よく考えると複数行形は必ず`\n`を使う。これ以外に縦のデリミタは存在しないからだ。よって複数行形の場合、第三引数デリミタの`\n`は省略できる。もし複数行にしたくないなら単数行形で表記すべきことにすればいい。
+
+```
+---ary(,(str,int),\c)
+山田,12
+鈴木,24
+---
+```
+```
+ary(,(str,int),\c) 山田,12,鈴木,24
 ```
 
 ### `Object`
