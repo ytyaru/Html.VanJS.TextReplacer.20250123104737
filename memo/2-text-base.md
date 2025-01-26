@@ -29,9 +29,9 @@
 
 横デリミタ|エスケープ|名前
 ----------|----------|----
-`	`|`\t`|タブ
-` `|`\b`|半角スペース
-`,`|`\c`|カンマ
+`	`|`\t`,`\   `|タブ
+` `|`\b`,`\ `|半角スペース
+`,`|`\c`,`\,`|カンマ
 `;`|`\;`|セミコロン
 `|`|`\|`|パイプ
 
@@ -140,6 +140,245 @@ ary(,,-) My-name-is-Andy This-is-a-pen Pen,"note",and-eraser. hyhon\-.
 ary(,,_) My_name_is_Andy This_is_a_pen Pen,"note",and_eraser. under\_bar.
 ```
 
+　型リストは`cols`として宣言したほうがいいかもしれない。
+
+```
+cols.human(name:str='',age:int=0)
+ary(members,cols.human) 山田 12 鈴木 24 高橋 36
+```
+
+　値の型には`cols`を指定できる。すなわちネスト。でもネストしたらメタ文字をどうするか問題がある。
+
+```
+cols.skill(id:int=0,name:str='',power:int=0)
+cols.human(name:str='',age:int=0,skill:[cols.skill.id])
+ary(members,cols.human) 山田 12 0,1 鈴木 24 1,2 高橋 36 3,4,5
+```
+
+```
+cols.A(id:int=0,name:str='')
+cols.B(id:int=0,name:str='',values:[cols.A.id])
+cols.C(id:int=0,name:str='',values:[cols.B.id])
+cols.human(name:str='',age:int=0,skills:[cols.C.id])
+rows(avs,cols.A) 0 A-Name-0 1 A-Name-1 2 A-Name-2 ...
+rows(bvs,cols.B) 0 B-Name-0 0,1 1 B-Name-1 1,2 2 B-Name-2 2,3 ...
+rows(cvs,cols.C) 0 C-Name-0 0,1 1 C-Name-1 1,2 2 C-Name-2 2,3 ...
+rows(members,(str,int,ints)) 山田 12 0,1 鈴木 24 1,2 高橋 36 3,4,5
+rows(members,(str,int,[int])) 山田 12 0,1 鈴木 24 1,2 高橋 36 3,4,5
+ary(members,cols.human) 山田 12 0,1 鈴木 24 1,2 高橋 36 3,4,5
+```
+```
+db.store.ary.members = [
+  {name:'山田', age:12, values:[
+    {id:0, name:'C-Name-0', values:[
+      {id:0, name:'B-Name-0', values:[
+        {id:0, name:'A-Name-0'}
+      ]}
+    ]}
+  ]}
+]
+```
+```
+table.A(id:int=0,name:str='') 0 A-Name-0 1 A-Name-1 2 A-Name-2 ...
+table.B(id:int=0,name:str='') 0 B-Name-0 0,1 1 B-Name-1 1,2 2 B-Name-2 2,3 ...
+table.C(id:int=0,name:str='') 0 C-Name-0 0,1 1 C-Name-1 1,2 2 C-Name-2 2,3 ...
+table.human(name:str='',age:int=0,skills:[cols.C.id]) 山田 12 0,1 鈴木 24 1,2 高橋 36 3,4,5
+```
+
+　表は複数行あるはずだが、それを一行で表現することも可能にしたい。列や行の数が少ない表を手軽に書きたいから。すると列と行のデリミタを` `にしたくなる。行列の区別は`cols`の要素数で決定する。
+
+　`cols`の列名だけで型や制約の設定を継承できるようにしたい。たとえば`id`なら整数型であり主キーであることが毎回決まっているため、名前だけで型や制約を確定させたい。
+
+```
+typedName.name(string,'',CH:0<this.length)
+typedName.id(integer,0,PK)
+typedName.age(integer,0,CH:0<=this && this<=100)
+```
+```
+typedName.name(string,\0,(v)=>0<v.length)
+typedName.id(integer,0,PK)
+typedName.age(integer,0,(v)=>0<=v && v<=100)
+```
+
+　キーには`PK`,`UK`,`FK`がある。キーは行検索や表結合で使う。
+
+キー|概要
+----|----
+`PK`|主キー。一意の値を持つ列であり`NN`(NotNull)制約である。
+`UK`|一意キー。一意の値を持つ列でありNULLを許容する。
+`FK`|外部キー。別表の主キーを値に持つ列である。
+
+　TextBaseにおいて全ての値はNN(`NotNull`)制約である。むしろ`null`を許容することはできないようにする。`int?`のように型名の末尾に`?`を付与すれば`null`許容型にできるようにする考えもあるが、問題は`null`のときは型が違うため、存在しないメソッドを呼び出そうとすると実行時エラーが発生してしまう所。そのせいでNULL判定する`if`文が大量発生してウザいため、基本的に`null`禁止とする。これを`null`安全と呼ぶ。
+
+　尚、`??`,`?.`等、`null`を上手く扱う方法もあるが、それだけでは解決できず`null`判定が必要な状況もあるため、`null`を使わないこととする。たとえば`typeof`演算子だと、値が`null`のとき`object`を返してしまう。`String`や`Integer`、`Null`ですらなく、なぜか`object`を返す。明らかに意図に反する結果のため、`null`は使うべきでない。また、`undefined`も紛らわしいため、使うべきでない。
+
+　そもそも`null`や`undefined`の値の意味は不透明である。未入力（まだ作業してない）なのか未回答（値が不明のため入力できない）なのか空値（どの値にも属さない何らかの状態）なのか不明である。`null`はあくまで参照先がないことを示す値にすぎない。これはポインタ変数の初期値でありデータの値として使うのは不適切である。`undefined`も同じくJS文脈における未定義を意味するものだから、データの値として使うのは間違った用法である。よって`null`や`undefined`はデータの値を定義するTextBase文脈内においては使用すべきでない値である。
+
+　`NaN`や`Infinity`も同様だ。`NaN`は計算不能を意味しており値ではなくエラーである。`Infinity`は無限数であり、有限数との計算ができない。普通は有限数による計算をするものであり、ましてやデータであるTextBaseで使う値ではない。よって`NaN`や`Infinity`は使用すべきではない値である。
+
+　未入力値は自動的に規定デフォルト値になる。あるいは指定デフォルト値にする。
+
+型|規定デフォルト値
+--|----------------
+`ary`|`[]`
+`obj`|`{}`
+`set`|`new Set()`
+`map`|`new Map()`
+
+型|規定デフォルト値
+--|----------------
+`arys`|`[[],[],...]`
+`objs`|`[{},{},...]`
+`sets`|`[new Set(), ...]`
+`mapt`|`[new Map(), ...]`
+
+型|規定デフォルト値
+--|----------------
+`cols`|`[{name:'', type:'', defaultValue:'', validate:()=>{}}]`, `[name:type=defVal, ...]`
+`rows`|`[[r1c1,r1c2],[r2c1,r2c1],...]`
+`table`|`{cols:[],rows:[]}`
+`enum`|`{key:{name:'', value:''}}`, `[{key:'', name:'', value:0},...]`
+`flags`|`[{name:'isA', value:0},...]`, `{isA:true, isB:false, isC:true}`, `0b101`
+
+型|規定デフォルト値
+--|----------------
+`setary`,`uniqary`,`uary`,`ids`|`[...new Set()]`
+`objmap`|`{k:new Map(), ...}`
+
+型|規定デフォルト値
+--|----------------
+`range`,`rng`|`[[1-800],[801-4000],[4001,20000],[20001,100000]]`
+`range`,`rng`|`[{name:'掌編',range:[1-800]},{name:'SS',range:[801-4000]},{name:'短編',range:[4001-20000]},{name:'中編',range:[20001-100000]},{name:'長編', range:[100001-500000]},{name:'巨編',range:[500001-Infinity]}}]`
+
+型|規定デフォルト値
+--|----------------
+`str`|``(空文字列。エスケープ文字`\0`または未入力)
+`int`|`0`(-1,MIN,MAX等も候補になる。NaN,Infinityは計算時に例外発生するため使用禁止)
+`flt`|`0.0`
+`bln`|`false`
+
+　真偽値をどう表記するか。
+
+`false`|`true`|解説
+-------|------|----
+`0`|`1`|C言語などでは数値`0`を`false`,それ以外を`true`と判断する。
+`F`|`T`|`False`と`True`の頭文字である。
+`f`|`t`|`false`と`true`の頭文字である。
+`x`|`o`|`❌`と`⭕`である。これは日本語圏における記号であり国際的には意味が逆になったり別の記号で表現する場合がある。
+`O`|`X`|`❌`と`⭕`を大文字で表現した。
+`_`|`v`|`❌`と`⭕`の英語圏版である。選挙の投票ではしばしばチェックをつけて真を表す記号に`✔`が使われる。英語圏における未回答は空欄だが、TextBaseでは意図した偽であることを明示するために`-`や`_`を用いることを提案する。`_`のほうが変数名として使いやすいか。
+
+　真偽値型においてデフォルト値をセットした場合、未入力の空欄なら、デフォルト値になるようにすれば、かなり字数を省略できるだろう。
+
+```
+cols.members(name:str='',isMale:b01=0)
+rows.members() 山田花子  鈴木一郎 1
+```
+
+　`cols.human.isMale`は男性なら真、女性なら偽で表現する。このときデフォルト値は`0`であり偽であり女性である。
+
+　`rows.human`において第二引数の`isMale`のデフォルト値は`0`である。もし値が省略され、何も入力されていなければ`0`であり女性だ。最初の行である`山田花子`は女性なので、第二引数`isMale`は空欄にすることで`0`(女性)であることを示している。
+
+　基本的に女性である場合、デフォルト値は女性にしておく。例外的に男性をメンバーとして受け入れる場合もあるが、そのときは`1`と明記する。これにより平時の入力が省力化され、なおかつ例外的なデータが目立つようになる。
+
+　`enum`型も定義したい。すなわち`enum`で定義された値のいずれかのみ許容する型である。
+```
+enum.任意型名(表記字:名前=初期値,...)
+```
+```
+enum.sex(M:male=0,F:female=1)
+```
+```
+enum.sex(M:male=0,F:female=1)
+cols.members(name:str,enum.sex=F) 山田花子  鈴木一郎 M
+```
+
+　値を省略すると`0`から始まる整数値を与えられます。
+
+```
+enum.sex(M:male,F:female)
+```
+
+　値はキーや名前と同じものを指定できます。
+
+```
+enum.sex(M:male={key},F:female={key})
+enum.sex(M:male={name},F:female={name})
+```
+
+　キーは名前を変換したものが使えます。
+
+```
+enum.sex({name.toUpperCase()}:male,{name.toUpperCase()[0]}:female)
+```
+
+　もし全列において同じ場合。その処理を定式化して共用したい。
+
+```
+[male,female]=>((name,i)=>`${name}.toUpperCase()[0]}:${name}`)
+enum.sex({name.toUpperCase()}:)
+
+enum.sex.key(name)=>`${name.toUpperCase()[0]}`
+
+enum.sex([male,female].(name)=>`${name.toUpperCase()[0]}`)
+enum.sex(keys=enum.sex.key, male, female)
+enum.sex(:male, :female, keys=(name)=>`${name.toUpperCase()[0]}`, )
+
+enum.sex(keys=(name)=>`${name.toUpperCase()[0]}) :male :female
+
+enum.sex() M:male=0 F:female=1
+
+enum.sex(keys=((name,value)=>{}), names=(key,value)=>{}, values=(key,name)=>{}) M:male=0 F:female=1
+```
+
+　`enum`は真偽値の他にも使える。一つ以上の定義をもつ。
+
+```javascript
+enum.sex = {
+  'M':{name:'male', value:0},
+  'F':{name:'female', value:1},
+}
+```
+
+　あるいはフラグのように併用したときその組合せが一意のバイナリになるような型が欲しい。以下は`isA`〜`isC`はそれぞれ真偽値を持っており、その値は`0b000`〜`0b111`の8通りで表せる。すなわち1バイト分のデータになる。このときテキスト表記をどうするか。二進数`0b000`のように表記するか十進数`0`にするか。編集性を考えると二進数表記がよい。圧縮性を考えると十進数表記がよい。統一的に十進数にするか？
+
+```
+flags.state(isA,isB,isC)
+```
+```
+isA 0b001 1
+isB 0b010 2
+isC 0b100 4
+```
+```
+flags.state(isA,isB,isC)
+cols.some(name:str,state:flags.state)
+rows.some(cols.some) 山田 0b000 鈴木 0b000
+rows.some(cols.some) 山田 000 鈴木 000
+rows.some(cols.some) 山田 0 鈴木 0
+rows.some(cols.some) 山田 0b111 鈴木 0b111
+rows.some(cols.some) 山田 111 鈴木 111
+rows.some(cols.some) 山田 7 鈴木 7
+```
+
+　先述のように、質問に対する回答パターンには以下のようなものがありうる。
+
+概念|仮名
+----|----
+未入力|`unset`（まだ作業していないのか、意図的に回答を避けたのか、意図的に回答を避けたことを悟られたくなくて回答拒否の意図すら明示しなかったのか、どうすればいいか判らなかったのか、考えるのが面倒なのか、興味がないのか一切不明。とにかく回答が得られなかった状態）
+回答拒否|`refusal to answer`（回答を拒む意志を明示する。政治的判断か、単に面倒だったか、プライバシーの侵害と思ったか不明）
+？値|`not clear`（回答を考えた結果、判らないことが判った。自身で答えが出せなかったことを明示する）
+無値|`none value`（回答を考えた結果、何もなかった。自身の答えが無いことを明示する。言われたらじつは有ったと言うかもしれない）
+選択値|`selected values`（用意された選択肢の中から選ぶ。それが全てであるとは言っていないし、そうだと判断するほど物を知らないかも）
+自由値|`free value`（任意テキスト。その回答を見た者が理解できるとは限らない。伝わるとも限らない。個人の価値観で判断されてしまう）
+
+　機械的に値の意味を定義しないと何を意図しているのか不明である。特に未入力の場合、その状態の意味は多岐に渡る。まだ質問を見ていないのか、質問は見たけど回答を考えている最中なのか、考えたけど何も思い浮かばないのか、思い浮かんだけどそれを回答しても良いか悩んでいるのか、政治的判断により心にもない意見を記述すべきと判断して忖度した答えなのか、忌憚なき意見を書いて自己主張した答えなのか。
+
+　解答欄に記述された文章は、どのような意図によって書かれたのか。それが書かれていない。その意図によっては、全く異なる意味になるだろう。
+
+　TextBaseで扱うデータは、あくまでバイナリ配列である。それを文字や数値などとして扱うことで、最終的に何らかのテキストに出力する意図がある。よって意図が不明瞭なデータは存在しない。それはあくまで`String`型のデータとして扱うのみである。また、基本的には一意なデータである。重複する部分は他のデータ識別として参照し、結合することで、最終結果を生成する。テキストを圧縮する意図がある。
+
+　質問に対する回答など、データ構造として正規化できていないデータについては、TextBaseで扱うべきか疑問である。単なるTSVとして扱ったほうが適切かもしれない。扱えないわけではないが、重複回答がありうるためテキスト圧縮の意図にそぐわないし、自然言語による自由回答なら、同じ意図でも表記ゆれなどによって同一判定ができなくなるだろう。そのあたりの処理はテキストマイニングの領分でありTextBaseの領分外だ。
 
 ## 型配列
 
