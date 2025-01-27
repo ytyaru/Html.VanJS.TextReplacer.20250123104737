@@ -1,4 +1,5 @@
 window.addEventListener('DOMContentLoaded', (event) => {
+    /*
     console.log('DOMContentLoaded!!');
     const {h1, p, a} = van.tags
     const author = 'ytyaru'
@@ -8,6 +9,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
 //        p('Text replacement engine.'),
     )
     van.add(document.querySelector('footer'),  new Footer('ytyaru', '../').make())
+    */
 });
 window.addEventListener('beforeunload', (event) => {
     console.log('beforeunload!!');
