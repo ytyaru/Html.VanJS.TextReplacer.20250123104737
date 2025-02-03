@@ -22,7 +22,8 @@ class ArrayDeserializer {
         if (/^ary[\.: =]/.test(text)) {return this.#ary(text)}
     }
     #ary(text) {
-        const match = text.match(/^ary(?<name>\.[_a-zA-Z][_a-zA-Z0-9]*)?(?<type>:(s|i(H|8|16|32|36)?|b|f|str|int(H|8|16|32|36)?|bln|flt))?(?<defVal>=([^ ,;]+))? (?<valueText>.+)/)
+        const match = text.match(/^ary(?<name>\.[_a-zA-Z][_a-zA-Z0-9]*)?(?<type>:(s|i(H|2|8|10|12|16|24|32|36)?|b|f|I|str|int(H|2|8|10|12|16|24|32|36)?|bln|flt|bi|string|integer(H|2|8|10|12|16|24|32|36)|boolean|float|bigint|biginteger))?(?<defVal>=([^ ,;]+))? (?<valueText>.+)/)
+        //const match = text.match(/^ary(?<name>\.[_a-zA-Z][_a-zA-Z0-9]*)?(?<type>:(s|i(H|8|16|32|36)?|b|f|str|int(H|8|16|32|36)?|bln|flt))?(?<defVal>=([^ ,;]+))? (?<valueText>.+)/)
         //const match = text.match(/^ary(?<name>\.[_a-zA-Z][_a-zA-Z0-9]*)?(?<type>:(s|i(H|8|16|32|36)?|b|f|str|int(H|8|16|32|36)|bln|flt))?(?<defVal>=(.+))? (?<valueText>.+)/)
         //const match = text.match(/^ary(?<name>\.[_a-zA-Z][_a-zA-Z0-9]*)?(?<type>:(s|i(H|8|16|32|36)?|b|f|str|int(H|8|16|32|36)|bln|flt))?((?!=)(?<defVal>(.+)))? (?<valueText>.+)/)
         if (match) {
@@ -33,6 +34,10 @@ class ArrayDeserializer {
             const type = this._T.read(typeT, defVal, textValues);
             console.log(match.groups.type, defVal, textValues, type)
             const values = textValues.map(t=>type.deserialize(t));
+//            console.log(values, type.deserialize('A\\nB'), type.deserialize('A\nB'), type.constructor.name)
+            //if (type instanceof StringDataType) console.log(values.map(v=>v.replaceAll('\\n','X')))
+            //if (type instanceof StringDataType) console.log(values.map(v=>v.replace(/\\n/g,'X')))
+            if (type instanceof StringDataType) console.log(values.map(v=>v.replace(/\\n/g,'X')))
             return values;
         } else {console.log('Not Array format.')}
     }
@@ -102,6 +107,14 @@ class TypeParser {
         }
         else if (['f','flt','float'].some(t=>t===typeTxt)) {return new FloatDataType(defValTxt)}
         else if (['b','bln','boolean'].some(t=>t===typeTxt)) {return new BooleanDataType(defValTxt)}
+        //else if (['I','bi','bgi','bigint','biginteger'].some(t=>t===typeTxt)) {return new BigIntDataType(defValTxt)}
+        //else if (['I','bi','bgi','bigint','biginteger'].some(t=>t===typeTxt)) {return new BigIntDataType(10,defValTxt)}
+        else if (['I','bi','bgi','bigint','biginteger'].some(t=>t===typeTxt)) {
+            const base = BigIntDataType.BaseAlias.some(b=>typeTxt.includes(b))
+                ? typeTxt.split(BigIntDataType.BaseAlias.filter(b=>typeTxt.includes(b))[0])[1]
+                : 10
+            return new BigIntDataType(base,defValTxt)
+        }
         else {return this.#suggestFromValueText(textValues, defValTxt)}
     }
     #suggestFromValueText(textValues, defValTxt) {
@@ -115,6 +128,12 @@ class TypeParser {
         else if (textValues.every(t=>/^(0z[0-9a-zA-Z]+)?$/.test(t))){console.log('Int36');return new IntDataType(36,defValTxt)}
         else if (textValues.every(t=>/^((\-)?(\d)*\.[\d]+)?$/.test(t))){console.log('Float');return new FloatDataType()}
         else if (textValues.every(t=>/^([_v])?$/.test(t))){console.log('Boolean');return new BooleanDataType()}
+//        else if (textValues.every(t=>/^((\-)?[0-9]+n)?$/.test(t))){console.log('BigInt');return new IntDataType(10,defValTxt)}
+//        else if (textValues.every(t=>/^((\-)?(0B[0-9]+|0O[0-7]+|0X[0-9a-zA-Z]+|[0-9]+n)?$/.test(t))){console.log('BigInt');return new BigIntDataType(10,defValTxt)}
+        else if (textValues.every(t=>/^(0B[0-9]+)?$/.test(t))){console.log('BigInt2');return new BigIntDataType(2,defValTxt)}
+        else if (textValues.every(t=>/^(0O[0-7]+)?$/.test(t))){console.log('BigInt8');return new BigIntDataType(8,defValTxt)}
+        else if (textValues.every(t=>/^((\-)?([0-9]+n))?$/.test(t))){console.log('BigInt10');return new BigIntDataType(10,defValTxt)}
+        else if (textValues.every(t=>/^(0X[0-9a-zA-Z]+)?$/.test(t))){console.log('BigInt16');return new BigIntDataType(16,defValTxt)}
         else {return new StringDataType()}
         /*
         if (textValues.every(t=>/^( )*$/)){return new DataType}
@@ -178,6 +197,7 @@ class DataType {
 class StringDataType extends DataType {
     constructor(defVal='') { super('string', defVal ?? '') }
     get alias() {return 's|str|string'.split('|')}
+    deserialize(text) {return super.deserialize(text).replace(/\\n/g,'\n').replace(/\\t/g,'\t')}
 }
 class FloatDataType extends DataType {
     constructor(defVal=0) {
@@ -221,11 +241,13 @@ class BooleanDataType extends DataType {
     get alias() {return 'b|bln|boolean'.split('|')}
     get valueTexts() {return ['_','v']}
     deserialize(text, type) {
+        //if ('boolean'===typeof text) {return text}
+        //if (super._isBln(text)) {return text}
         const v = super.deserialize(text)
-        if ('boolean'===typeof v) {return v}
-        else if ('_'===v) {return false}
+        if (super._isBln(v)) {return v}
+        if (''===v || '_'===v) {return false}
         else if ('v'===v) {return true}
-        else {throw new TypeError(`真偽値は_かvか空文字で表現されます。空文字はデフォルト値です。それ以外の値は無効です。:${text}`)}
+        else {throw new TypeError(`真偽値は_かvか空文字で表現されます。空文字はデフォルト値です。それ以外の値は無効です。:${text}:${v}`)}
         /*
              if (''===v) {return this.defaultValue}
         else if ('_'===v) {return false}
@@ -290,14 +312,17 @@ class IntDataType extends DataType {
     }
 }
 class BigIntDataType extends DataType {
+    static BaseAlias = 'H|2|8|10|16'.split('|');
     constructor(base=10, defVal=0n) {
-        super('biginteger', defVal ?? 0n);
+        super('bigint', defVal ?? 0n);
+        //this._base = base;
         this._base = base;
         //this._basePrefix = {b:2, o:8, x:16, z:36}
-        this._basePrefix = {b:2, o:8, x:16} // parseInt('', 36) のように36進数変換できない
+        this._basePrefix = {B:2, O:8, X:16} // parseInt('', 36) のように36進数変換できない
+        this._defaultValue = this.deserialize(defVal)
     }
     get base() {return this._base}
-    get alias() {return 'I|bi|bigint|biginteger'.split('|')}
+    get alias() {return 'I|bi|bgi|bigint|biginteger'.split('|')}
     get baseAlias() {return 'H|2|8|16|'.split('|')}
     get baseValues() {return this.basePrefixs.map(k=>this._basePrefix[k])}
     get basePrefixs() {return Object.getOwnPropertyNames(this._basePrefix)}
@@ -308,6 +333,7 @@ class BigIntDataType extends DataType {
     deserialize(text) {
         const d = super.deserialize(text)
         if ('bigint'===typeof d){return d}
+//        if (this._isStr(text) && /^[0-9]+n$/.test(text)){text=text.slice(0,-1)}
 //        if (''===text){return this.defaultValue}
         return BigInt(text)
     } // BigInt('x') SyntaxError: Cannot convert x to a BigInt
