@@ -20,7 +20,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
             return undefined===vals
         })
     }
-    // 正常系
+    // 正常系（デリミタ＝スペース）
     a.t(()=>{
         const strs = t.deserialize('ary A B C')
         return 3===strs.length && Type.isStrs(strs) && 'A'===strs[0] && 'B'===strs[1] && 'C'===strs[2]
@@ -78,8 +78,44 @@ window.addEventListener('DOMContentLoaded', (event) => {
         return 6===vals.length && Type.isBlns(vals) && false===vals[0] && true===vals[1] && true===vals[2] && false===vals[3] && false===vals[4] && false===vals[5]
     })
 
-
-
+    // 文字列型
+    a.t(()=>{// 値を省略したらデフォルト値になる（文字列型のデフォルト値は空文字）
+        const strs = t.deserialize('ary   ')
+        console.log(strs)
+        return 3===strs.length && Type.isStrs(strs) && ''===strs[0] && ''===strs[1] && ''===strs[2]
+    })
+    a.t(()=>{// 型を指定する
+        const strs = t.deserialize('ary:str A B C')
+        return 3===strs.length && Type.isStrs(strs) && 'A'===strs[0] && 'B'===strs[1] && 'C'===strs[2]
+    })
+    a.t(()=>{// 値を省略したらデフォルト値になる（文字列型のデフォルト値は空文字）
+        const strs = t.deserialize('ary:str   ')
+        console.log(strs)
+        return 3===strs.length && Type.isStrs(strs) && ''===strs[0] && ''===strs[1] && ''===strs[2]
+    })
+    a.t(()=>{// 型とデフォルト値を任意に設定する
+        const strs = t.deserialize('ary:str=x   ')
+        console.log(strs)
+        return 3===strs.length && Type.isStrs(strs) && 'x'===strs[0] && 'x'===strs[1] && 'x'===strs[2]
+    })
+    // 整数型
+    a.t(()=>{// 型を指定し値を省略したらデフォルト値になる（整数型のデフォルト値は0）
+        const vals = t.deserialize('ary:int   ')
+        console.log(vals)
+        return 3===vals.length && Type.isInts(vals) && 0===vals[0] && 0===vals[1] && 0===vals[2]
+    })
+    a.t(()=>{// 型を指定する
+        const vals = t.deserialize('ary:int 2 4 6')
+        return 3===vals.length && Type.isInts(vals) && 2===vals[0] && 4===vals[1] && 6===vals[2]
+    })
+    a.t(()=>{// 型を指定し値を省略したらデフォルト値になる（整数型のデフォルト値は0）
+        const vals = t.deserialize('ary:int  1 2')
+        return 3===vals .length && Type.isInts(vals) && 0===vals[0] && 1===vals[1] && 2===vals[2]
+    })
+    a.t(()=>{// 型とデフォルト値を任意に設定する
+        const vals = t.deserialize('ary:int=9   ')
+        return 3===vals.length && Type.isInts(vals) && 9===vals[0] && 9===vals[1] && 9===vals[2]
+    })
 
 
     a.fin()
