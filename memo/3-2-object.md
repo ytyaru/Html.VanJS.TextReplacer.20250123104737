@@ -4,6 +4,40 @@
 obj key1 value1 key2 value2
 ```
 ```
+obj name yamada age 12
+```
+```
+obj(name:str=Yamada,age:int=12)
+```
+```
+obj(name:str,age:int) Yamada 12
+```
+```
+obj name:str yamada age:flt 12
+```
+```
+obj name:str=yamada age:flt=12
+```
+```
+obj name:str=yamada,age:flt=12
+```
+```
+obj.yamada name:str=yamada,age:flt=12
+```
+```
+obj.yamada name=yamada,age:flt=12
+```
+```
+obj.yamada name yamada age:flt 12
+```
+
+
+
+
+
+
+
+```
 obj(str,int) yamada 12 suzuki 24
 ```
 ```
