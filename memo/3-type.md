@@ -61,6 +61,13 @@
 `flt`|`0.0`
 `bln`|`false`
 
+　`null`,`undefined`,`NaN`に関しては使用禁止である。ただし`Infinity`,`MAX`,`MIN`は場合によって使用する。
+
+* `Number.MAX_SAFE_INTEGER`
+* `Number.MIN_SAFE_INTEGER`
+* `Number.POSITIVE_INFINITY`
+* `Number.NEGATIVE_INFINITY`
+
 　実態はオブジェクトだがプリミティブ型とされる型。
 
 型|規定デフォルト値

@@ -68,7 +68,9 @@ window.addEventListener('DOMContentLoaded', (event) => {
         console.log(vals)
         return 6===vals.length && Type.isBlns(vals) && false===vals[0] && true===vals[1] && true===vals[2] && false===vals[3] && false===vals[4] && false===vals[5]
     })
-    // BigInt型付リテラル（ary:I 2 4 6）と書いたほうが短くなるので微妙な気がする
+    // BigInt型付リテラル（ary:I 2 4 6）と書いたほうが短くなるので微妙な気がする。ただObject等一要素毎に型が違う場合は有効か。
+    // 配列型でのBigInt型付リテラルについては有効性が低いため、いずれ削除すべき機能になるかもしれない。
+    // ただしObject型など他の型での有効性はあるかもしれないため、参考にすべく実装は残しておく。
     a.t(()=>{
         const vals = t.deserialize('ary 2n 4n 6n')
         return 3===vals.length && Type.isBigInts(vals) && 2n===vals[0] && 4n===vals[1] && 6n===vals[2]

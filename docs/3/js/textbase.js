@@ -22,7 +22,7 @@ class ArrayDeserializer {
         if (/^ary[\.: =]/.test(text)) {return this.#ary(text)}
     }
     #ary(text) {
-        const match = text.match(/^ary(?<name>\.[_a-zA-Z][_a-zA-Z0-9]*)?(?<type>:(s|i(H|2|8|10|12|16|24|32|36)?|b|f|I|str|int(H|2|8|10|12|16|24|32|36)?|bln|flt|bi|string|integer(H|2|8|10|12|16|24|32|36)|boolean|float|bigint|biginteger))?(?<defVal>=([^ ,;]+))? (?<valueText>.+)/)
+        const match = text.match(/^ary(?<name>\.[_a-zA-Z][_a-zA-Z0-9]*)?(?<type>:(s|i(H|2|8|10|12|16|24|32|36)?|b|f|I|str|int(H|2|8|10|12|16|24|32|36)?|bln|flt|bi|bool|string|integer(H|2|8|10|12|16|24|32|36)|boolean|float|bigint|biginteger))?(?<defVal>=([^ ,;]+))? (?<valueText>.+)/)
         if (match) {
 //            console.log(match)
             const textValues = this._S.split(match.groups.valueText);
@@ -36,7 +36,7 @@ class ArrayDeserializer {
         } else {console.log('Not Array format.')}
     }
 }
-class ObjectDeserializer {
+class ObjectDeserializer {// obj key value
     constructor() {
         this._S = new Splitter();
         this._T = new TypeParser();
@@ -94,7 +94,7 @@ class TypeParser {
             return new IntDataType('H'===base ? 16 : parseInt(base), defValTxt)
         }
         else if (['f','flt','float'].some(t=>t===typeTxt)) {return new FloatDataType(defValTxt)}
-        else if (['b','bln','boolean'].some(t=>t===typeTxt)) {return new BooleanDataType(defValTxt)}
+        else if (['b','bln','bool','boolean'].some(t=>t===typeTxt)) {return new BooleanDataType(defValTxt)}
         else if (['I','bi','bgi','bigint','biginteger'].some(t=>t===typeTxt)) {
             const base = BigIntDataType.BaseAlias.some(b=>typeTxt.includes(b))
                 ? typeTxt.split(BigIntDataType.BaseAlias.filter(b=>typeTxt.includes(b))[0])[1]
@@ -224,7 +224,7 @@ class BooleanDataType extends DataType {
     constructor(defVal=false) {
         super('boolean', defVal ?? false);
     }
-    get alias() {return 'b|bln|boolean'.split('|')}
+    get alias() {return 'b|bln|bool|boolean'.split('|')}
     get valueTexts() {return ['_','v']}
     deserialize(text, type) {
         //if ('boolean'===typeof text) {return text}
