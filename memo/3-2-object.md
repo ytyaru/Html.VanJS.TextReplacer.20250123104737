@@ -1,5 +1,9 @@
 # Object(KeyValue)
 
+# 表記パターン網羅
+
+　どれが最善か。判断基準は短く書けること。シンプルであること。実装も楽であること。
+
 ```
 obj key1 value1 key2 value2
 ```
@@ -7,10 +11,16 @@ obj key1 value1 key2 value2
 obj name yamada age 12
 ```
 ```
+obj(name,age) Yamada 12
+```
+```
 obj(name:str=Yamada,age:int=12)
 ```
 ```
 obj(name:str,age:int) Yamada 12
+```
+```
+obj name:str yamada age:int 12
 ```
 ```
 obj name:str yamada age:flt 12
@@ -31,7 +41,18 @@ obj.yamada name=yamada,age:flt=12
 obj.yamada name yamada age:flt 12
 ```
 
+　以下の書式がベストか。
 
+```
+obj name:str yamada age:int 12
+```
+
+```
+obj 名前 値
+```
+```
+obj 名前:型 値
+```
 
 
 

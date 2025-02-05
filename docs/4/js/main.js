@@ -533,12 +533,132 @@ window.addEventListener('DOMContentLoaded', (event) => {
         console.log(vals)
         return 3===vals.length && Type.isInts(vals) && 35===vals[0] && 1295===vals[1] && 36===vals[2]
     })
-    // intの上限・下限値（正確な値を保てなくなる値だと例外発生）
+    // intの上限・下限値（正確な値を保てなくなる値だと例外発生。Infinityもエラーにすべきか。今は放置しておく。）
     a.t(()=>t.deserialize('ary 9007199254740991')[0]===9007199254740991)
     a.t(()=>t.deserialize('ary -9007199254740991')[0]===-9007199254740991)
     a.e(TypeError, `Infinityでないにも関わらずNumber.MAX_SAFE_INTEGERよりも大きい値です。正確な値を保てないためエラーとします。:9007199254740992:9007199254740992`, ()=>t.deserialize('ary 9007199254740992'))
     a.e(TypeError, `-Infinityでないにも関わらずNumber.MIN_SAFE_INTEGERよりも小さい値です。正確な値を保てないためエラーとします。:-9007199254740992:-9007199254740992`, ()=>t.deserialize('ary -9007199254740992'))
 
+
+    //-----------------------
+    // Object
+    //-----------------------
+    a.t(()=>{
+        const vals = t.deserialize('obj key value')
+        return Type.isObj(vals) && 1===[...Object.keys(vals)].length
+            && vals.hasOwnProperty('key') && 'value'===vals.key && Type.isStr(vals.key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('obj name Yamada age 12')
+        console.log(vals)
+        return Type.isObj(vals) && 2===[...Object.keys(vals)].length
+            && vals.hasOwnProperty('name') && 'Yamada'===vals.name && Type.isStr(vals.name)
+            && vals.hasOwnProperty('age') && 12===vals.age && Type.isInt(vals.age)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('obj name:str Yamada age:int 12')
+        console.log(vals)
+        return Type.isObj(vals) && 2===[...Object.keys(vals)].length
+            && vals.hasOwnProperty('name') && 'Yamada'===vals.name && Type.isStr(vals.name)
+            && vals.hasOwnProperty('age') && 12===vals.age && Type.isInt(vals.age)
+    })
+    a.t(()=>{
+        // 65.0はType.isFltで偽を返すが、65.1は真を返す。1で割り切れるか否かが分かれ目。
+        const vals = t.deserialize('obj id:I 5 name:s Yamada age:i 12 isMale:b v weight:f 65.0')
+        return Type.isObj(vals) && 5===[...Object.keys(vals)].length
+            && vals.hasOwnProperty('id') && 5n===vals.id && Type.isBigInt(vals.id)
+            && vals.hasOwnProperty('name') && 'Yamada'===vals.name && Type.isStr(vals.name)
+            && vals.hasOwnProperty('age') && 12===vals.age && Type.isInt(vals.age)
+            && vals.hasOwnProperty('isMale') && true===vals.isMale && Type.isBln(vals.isMale)
+            && vals.hasOwnProperty('weight') && 65.0===vals.weight && (Type.isFlt(vals.weight) || Type.isInt(vals.weight))
+    })
+    a.t(()=>{
+        const vals = t.deserialize('obj id:I 5 name:s Yamada age:i 12 isMale:b v weight:f 65.1')
+        return Type.isObj(vals) && 5===[...Object.keys(vals)].length
+            && vals.hasOwnProperty('id') && 5n===vals.id && Type.isBigInt(vals.id)
+            && vals.hasOwnProperty('name') && 'Yamada'===vals.name && Type.isStr(vals.name)
+            && vals.hasOwnProperty('age') && 12===vals.age && Type.isInt(vals.age)
+            && vals.hasOwnProperty('isMale') && true===vals.isMale && Type.isBln(vals.isMale)
+            && vals.hasOwnProperty('weight') && 65.1===vals.weight && Type.isFlt(vals.weight)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('obj id:iH f')
+        return Type.isObj(vals) && 1===[...Object.keys(vals)].length
+            && vals.hasOwnProperty('id') && 15===vals.id && Type.isInt(vals.id)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('obj id:i2 11')
+        return Type.isObj(vals) && 1===[...Object.keys(vals)].length
+            && vals.hasOwnProperty('id') && 3===vals.id && Type.isInt(vals.id)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('obj id:i8 77')
+        return Type.isObj(vals) && 1===[...Object.keys(vals)].length
+            && vals.hasOwnProperty('id') && 63===vals.id && Type.isInt(vals.id)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('obj id:i16 ff')
+        return Type.isObj(vals) && 1===[...Object.keys(vals)].length
+            && vals.hasOwnProperty('id') && 255===vals.id && Type.isInt(vals.id)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('obj id:i36 zz')
+        return Type.isObj(vals) && 1===[...Object.keys(vals)].length
+            && vals.hasOwnProperty('id') && 1295===vals.id && Type.isInt(vals.id)
+    })
+    // BigInt
+    a.t(()=>{
+        const vals = t.deserialize('obj id:IH f')
+        return Type.isObj(vals) && 1===[...Object.keys(vals)].length
+            && vals.hasOwnProperty('id') && 15n===vals.id && Type.isBigInt(vals.id)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('obj id:I2 11')
+        return Type.isObj(vals) && 1===[...Object.keys(vals)].length
+            && vals.hasOwnProperty('id') && 3n===vals.id && Type.isBigInt(vals.id)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('obj id:I8 77')
+        return Type.isObj(vals) && 1===[...Object.keys(vals)].length
+            && vals.hasOwnProperty('id') && 63n===vals.id && Type.isBigInt(vals.id)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('obj id:I16 ff')
+        return Type.isObj(vals) && 1===[...Object.keys(vals)].length
+            && vals.hasOwnProperty('id') && 255n===vals.id && Type.isBigInt(vals.id)
+    })
+    a.t(()=>{// 存在しない型。BigIntは0b,0o,0x(2,8,16)の基数にしか対応していないため、36進数は非対応。未知型は文字列型になる。
+        const vals = t.deserialize('obj id:I36 zz')
+        return Type.isObj(vals) && 1===[...Object.keys(vals)].length
+            //&& vals.hasOwnProperty('id') && 1295n===vals.id && Type.isBigInt(vals.id)
+            && vals.hasOwnProperty('id') && 'zz'===vals.id && Type.isStr(vals.id)
+    })
+    // 要素数が奇数の場合、値は初期値になる。
+    a.t(()=>{
+        const vals = t.deserialize('obj key')
+        return Type.isObj(vals) && 1===[...Object.keys(vals)].length
+            && vals.hasOwnProperty('key') && ''===vals.key && Type.isStr(vals.key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('obj key:i')
+        return Type.isObj(vals) && 1===[...Object.keys(vals)].length
+            && vals.hasOwnProperty('key') && 0===vals.key && Type.isInt(vals.key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('obj key:f')
+        return Type.isObj(vals) && 1===[...Object.keys(vals)].length
+            && vals.hasOwnProperty('key') && 0===vals.key && (Type.isFlt(vals.key) || Type.isInt(vals.key))
+    })
+    a.t(()=>{
+        const vals = t.deserialize('obj key:b')
+        return Type.isObj(vals) && 1===[...Object.keys(vals)].length
+            && vals.hasOwnProperty('key') && false===vals.key && Type.isBln(vals.key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('obj key:I')
+        return Type.isObj(vals) && 1===[...Object.keys(vals)].length
+            && vals.hasOwnProperty('key') && 0n===vals.key && Type.isBigInt(vals.key)
+    })
     a.fin()
 });
 window.addEventListener('beforeunload', (event) => {
