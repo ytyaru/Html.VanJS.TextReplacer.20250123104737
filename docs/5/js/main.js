@@ -677,6 +677,13 @@ window.addEventListener('DOMContentLoaded', (event) => {
     //-----------------------
     // Table
     //-----------------------
+    a.t(()=>{return undefined===t.deserialize('tbl')})
+    a.t(()=>{return undefined===t.deserialize('tbl(name)')})
+    a.t(()=>{return undefined===t.deserialize('tbl(name) ')})
+    a.t(()=>{
+        const vals = t.deserialize('tbl(name) A')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 'A'===vals[0].name
+    })
     a.t(()=>{
         const vals = t.deserialize('tbl(name,age) yamada 12 suzuki 24')
         console.log(vals)
@@ -698,6 +705,176 @@ window.addEventListener('DOMContentLoaded', (event) => {
             && 'yamada'===vals[0].name && 12===vals[0].age
             && 'suzuki'===vals[1].name && 24===vals[1].age
     })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key:s) v')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 'v'===vals[0].key && Type.isStr(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key:b) v')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && true===vals[0].key && Type.isBln(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key:f) 12.3')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 12.3===vals[0].key && Type.isFlt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key:i) 3')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 3===vals[0].key && Type.isInt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key:i2) 11')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 3===vals[0].key && Type.isInt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key:i8) 77')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 63===vals[0].key && Type.isInt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key:iH) ff')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 255===vals[0].key && Type.isInt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key:i16) ff')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 255===vals[0].key && Type.isInt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key:i36) zz')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 1295===vals[0].key && Type.isInt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key:I) 3')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 3n===vals[0].key && Type.isBigInt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key:I2) 11')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 3n===vals[0].key && Type.isBigInt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key:I8) 77')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 63n===vals[0].key && Type.isBigInt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key:IH) ff')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 255n===vals[0].key && Type.isBigInt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key:I16) ff')
+        console.log(vals)
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 255n===vals[0].key && Type.isBigInt(vals[0].key)
+    })
+    // 型変換失敗系
+    a.e(TypeError, `Boolean型への変換に失敗しました。Boolean型の値は_,v,空文字のいずれかで表現されます。:あ:あ`, ()=>t.deserialize('tbl(key:b) あ'))
+    a.e(TypeError, `Float型への変換に失敗しました。:あ:NaN`, ()=>t.deserialize('tbl(key:f) あ'))
+    a.e(TypeError, `Int型への変換に失敗しました。:あ:NaN:10:`, ()=>t.deserialize('tbl(key:i) あ'))
+    a.e(TypeError, `Int型への変換に失敗しました。:あ:NaN:2:b`, ()=>t.deserialize('tbl(key:i2) あ'))
+    a.e(TypeError, `Int型への変換に失敗しました。:あ:NaN:8:o`, ()=>t.deserialize('tbl(key:i8) あ'))
+    a.e(TypeError, `Int型への変換に失敗しました。:あ:NaN:16:x`, ()=>t.deserialize('tbl(key:iH) あ'))
+    a.e(TypeError, `Int型への変換に失敗しました。:あ:NaN:16:x`, ()=>t.deserialize('tbl(key:i16) あ'))
+    a.e(TypeError, `Int型への変換に失敗しました。:あ:NaN:36:z`, ()=>t.deserialize('tbl(key:i36) あ'))
+    a.e(TypeError, `BigInt型への変換に失敗しました。:あ`, ()=>t.deserialize('tbl(key:I) あ'))
+    a.e(TypeError, `BigInt型への変換に失敗しました。:0Bあ`, ()=>t.deserialize('tbl(key:I2) あ'))
+    a.e(TypeError, `BigInt型への変換に失敗しました。:0Oあ`, ()=>t.deserialize('tbl(key:I8) あ'))
+    a.e(TypeError, `BigInt型への変換に失敗しました。:0Xあ`, ()=>t.deserialize('tbl(key:IH) あ'))
+    a.e(TypeError, `BigInt型への変換に失敗しました。:0Xあ`, ()=>t.deserialize('tbl(key:I16) あ'))
+    // リテラル値から型推論する
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key) A')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 'A'===vals[0].key && Type.isStr(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key) _')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && false===vals[0].key && Type.isBln(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key) v')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && true===vals[0].key && Type.isBln(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key) .1')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 0.1===vals[0].key && Type.isFlt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key) -.1')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && -0.1===vals[0].key && Type.isFlt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key) -0.1')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && -0.1===vals[0].key && Type.isFlt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key) 12.3')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 12.3===vals[0].key && Type.isFlt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key) -12.3')
+        console.log(vals)
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && -12.3===vals[0].key && Type.isFlt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key) 1.0')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 1.0===vals[0].key && Type.isInt(vals[0].key) // JSではIntとFltは共にNumber型のため1で割り切れる数は区別が付かなくなる
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key) 0.0')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 0.0===vals[0].key && Type.isInt(vals[0].key) // JSではIntとFltは共にNumber型のため1で割り切れる数は区別が付かなくなる
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key) 0')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 0===vals[0].key && Type.isInt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key) 0b11')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 3===vals[0].key && Type.isInt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key) 0o77')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 63===vals[0].key && Type.isInt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key) 0xff')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 255===vals[0].key && Type.isInt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key) 0xFF')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 255===vals[0].key && Type.isInt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key) 0zzz')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 1295===vals[0].key && Type.isInt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key) 0zZZ')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 1295===vals[0].key && Type.isInt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key) 3n')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 3n===vals[0].key && Type.isBigInt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key) 0B11')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 3n===vals[0].key && Type.isBigInt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key) 0O77')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 63n===vals[0].key && Type.isBigInt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key) 0Xff')
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 255n===vals[0].key && Type.isBigInt(vals[0].key)
+    })
+    a.t(()=>{
+        const vals = t.deserialize('tbl(key) 0XFF')
+        console.log(vals)
+        return Array.isArray(vals) && 1===vals.length && Type.isObjs(vals) && 255n===vals[0].key && Type.isBigInt(vals[0].key)
+    })
+
+
+
+
+
+
+
+
 
 
 

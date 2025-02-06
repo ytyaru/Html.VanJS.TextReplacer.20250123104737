@@ -261,6 +261,8 @@ class Splitter {
 class LiteralType {//リテラル値から型を推論する
     static get(text) {
              if (/^[_v]+$/.test(text)){return new BooleanDataType()}
+//        else if (/^(\d+)?\.\d+$/.test(text)){return new FloatDataType()}
+        else if (/^(-)?(\d+)?\.\d+$/.test(text)){return new FloatDataType()}
         else if (/^(-)?\d+$/.test(text)){return new IntDataType(10)}
         else if (/^0b[0-1]+$/.test(text)){return new IntDataType(2)}
         else if (/^0o[0-7]+$/.test(text)){return new IntDataType(8)}
@@ -270,7 +272,6 @@ class LiteralType {//リテラル値から型を推論する
         else if (/^0B[0-1]+$/.test(text)){return new BigIntDataType(2)}
         else if (/^0O[0-7]+$/.test(text)){return new BigIntDataType(8)}
         else if (/^0X[0-9a-fA-F]+$/.test(text)){return new BigIntDataType(16)}
-        else if (/^(\d+)?\.\d+$/.test(text)){return new FloatDataType()}
         else {return new StringDataType()}
     }
 }
@@ -613,7 +614,8 @@ class IntDataType extends DataType {
     get basePrefixs() {return Object.getOwnPropertyNames(this._basePrefix)}
     get basePrefix() {
         const bi = this.baseValues.indexOf(this.base)
-        return bi===-1 ? '' : this.basePrefixs[bi];
+//        return bi===-1 ? '' : this.basePrefixs[bi];
+        return bi===-1 || 10===this.base ? '' : this.basePrefixs[bi];
     }
     //deserialize(text) {console.log(text, this.basePrefix, this.base);return parseInt(text.replace(this.basePrefix,''), this.base)}
     deserialize(text) {
@@ -638,7 +640,7 @@ class IntDataType extends DataType {
         return v
         */
     }
-    #delPrefix(d){return (this._isStr(d) && d.startsWith(`0${this.basePrefix}`)) ? d.slice(2) : d}
+    #delPrefix(d){return (this._isStr(d) && ''!==this.basePrefix && d.startsWith(`0${this.basePrefix}`)) ? d.slice(2) : d}
 }
 class BigIntDataType extends DataType {
     static BaseAlias = 'H|2|8|10|16'.split('|');
