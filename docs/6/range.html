@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title></title>
+<meta name="description" content="">
+<meta name="author" content="ytyaru">
+<link rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/deed.ja">
+<link rel="icon" href="../asset/image/author/ytyaru.png">
+<link rel="stylesheet" href="css/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../lib/van/1.2.6/nomodule.min.js"></script>
+<script src="../lib/util/type.js"></script>
+<script src="../lib/util/test/assertion.js"></script>
+<script src="../js/footer.js"></script>
+<script src="js/origin-type/range.js"></script>
+<!--<script src="js/ary.js"></script>-->
+<script src="js/textbase.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', async(event) => {
+    const a = new Assertion();
+    a.e(TypeError, `値は整数型2^53範囲内であるべきです。:undefined`, ()=>new Range());
+    a.e(TypeError, `値は整数型2^53範囲内であるべきです。:undefined`, ()=>new Range(0));
+    a.e(TypeError, `値は整数型2^53範囲内であるべきです。:undefined`, ()=>new Range(0,));
+    a.e(TypeError, `Rangeの引数はmin,maxの順で指定します。minとmaxは1以上差のある整数値であるべきです。:min=0,max=0,max-min=0`, ()=>new Range(0,0));
+    a.t(()=>{
+        const r = new Range(0,1);
+        return 0===r.min && 1===r.max
+    })
+    a.t(()=>{
+        const r = new Range(0,1);
+        // 本当は代入した時点で例外発生して欲しい
+        // Object.freeze()したらpxy._originalTargetで元のインスタンスを保持できないので仕方なく解禁する。
+        // そのせいでいくらでも代入できてしまう…
+        r._min = 2 // Object.freeze()されず代入できてしまう…
+        r._max = 3 // Object.freeze()されず代入できてしまう…
+        r.min = 2 // Object.freeze()されず代入できてしまう…と思ったがセッターを用意していないためかセーフ
+        r.max = 3 // Object.freeze()されず代入できてしまう…と思ったがセッターを用意していないためかセーフ
+        console.log(r)
+//        console.log(r.hasOwnProperty('_min') , r.hasOwnProperty('_max') , !r.hasOwnProperty('min') , !r.hasOwnProperty('max'))
+        //return 0===r.min && 1===r.max && r.hasOwnProperty('_min') && r.hasOwnProperty('_max') && !r.hasOwnProperty('min') && !r.hasOwnProperty('max')
+        return 2===r.min && 3===r.max && r.hasOwnProperty('_min') && r.hasOwnProperty('_max') && !r.hasOwnProperty('min') && !r.hasOwnProperty('max')
+    })
+    a.t(()=>{
+        const r = new Range(0,1);
+        return 0===r.min && 1===r.max
+            && r.within(0) && r.within(1) && !r.within(-1) && !r.within(2)
+            && r.without(-1) && r.without(2) && !r.without(0) && !r.without(1)
+            && r.lower(-1) && r.upper(2) && !r.lower(0) && !r.upper(1)
+    })
+    a.t(()=>{
+        const r = new Range(0,1);
+        return 0===r.min && 1===r.max && 'within'===r.state(0) && 'within'===r.state(1)
+            && 'without'===r.state2(-1) && 'without'===r.state2(2)
+            && 'lower'===r.state(-1) && 'upper'===r.state(2)
+    })
+    // Range.new()で生成するとProxy版になり代入禁止など安全になる。
+    a.e(TypeError, `値は整数型2^53範囲内であるべきです。:undefined`, ()=>Range.new())
+    a.e(TypeError, `値は整数型2^53範囲内であるべきです。:undefined`, ()=>Range.new(0))
+    a.e(TypeError, `値は整数型2^53範囲内であるべきです。:undefined`, ()=>Range.new(0,))
+    a.e(TypeError, `Rangeの引数はmin,maxの順で指定します。minとmaxは1以上差のある整数値であるべきです。:min=0,max=0,max-min=0`, ()=>Range.new(0,0));
+    a.t(()=>{
+        const r = Range.new(0,1);
+        return 0===r.min && 1===r.max
+    })
+    a.e(TypeError, `代入禁止です。`, ()=>{const r = Range.new(0,1);r._min = 2;})
+    a.e(TypeError, `代入禁止です。`, ()=>{const r = Range.new(0,1);r._max = 3;})
+    a.e(TypeError, `代入禁止です。`, ()=>{const r = Range.new(0,1);r.min = 2;})
+    a.e(TypeError, `代入禁止です。`, ()=>{const r = Range.new(0,1);r.max = 3;})
+    a.e(TypeError, `代入禁止です。`, ()=>{const r = Range.new(0,1);r.within = ()=>{};})
+    a.t(()=>{
+        const r = Range.new(0,1);
+        return 0===r.min
+            && 1===r.max
+        //return 0===r.min && 1===r.max
+        //return 0===r.min && 1===r.max && r instanceof Range
+            //&& r.within(0) && r.within(1) && !r.within(-1) && !r.within(2)
+            && r.within(0)
+            && r.within(1)
+            && !r.within(-1) && !r.within(2)
+            && r.without(-1) && r.without(2) && !r.without(0) && !r.without(1)
+            && r.lower(-1) && r.upper(2) && !r.lower(0) && !r.upper(1)
+    })
+    a.t(()=>{
+        const r = new Range(0,1);
+        return 0===r.min && 1===r.max && 'within'===r.state(0) && 'within'===r.state(1)
+            && 'without'===r.state2(-1) && 'without'===r.state2(2)
+            && 'lower'===r.state(-1) && 'upper'===r.state(2)
+    })
+    a.fin()
+});
+</script>
+</head>
+<body>
+</body>
+</html>
