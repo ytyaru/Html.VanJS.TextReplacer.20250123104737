@@ -17,6 +17,10 @@
 
 　整数値を二つ引数に取る。下限超過、上限超過、範囲内、の三値判定できる。
 
+```
+rng 0 100
+```
+
 ```javascript
 class Range {
     constructor(min,max) {
@@ -37,3 +41,72 @@ class Range {
 }
 ```
 
+## Section
+
+　範囲を`min-max`で表記する。でも負数の場合は記号が重複する。
+
+```
+section.novelScale -0:none=無 1-:palm=掌編 801-:ss=SS 4001-:short:短編 20001-:middle=中編 100001-:long=長編 500001-:huge:巨編
+```
+
+　範囲を`min,max`で表記する。最初の`min`を略したら`-Infinity`になる。最後の`max`を略したら`Infinity`になる。途中の`min`,`max`を略したら前後にある要素から`+1`,`-1`した値をセットする。
+
+```
+section.novelScale ,0:none=無 1,:palm=掌編 801,:ss=SS 4001,:short:短編 20001,:middle=中編 100001,:long=長編 500001,:huge:巨編
+```
+
+　複数行表記なら以下。
+
+```
+---section.novelScale
+,0	none	無
+1,	palm	掌編
+801,	ss	SS
+4001,	short	短編
+20001,	middle	中編
+100001,	long	長編
+500001,	huge	巨編
+---
+```
+```
+---section.novelScale
+	-500001	task	課題(巨編)
+	-100001	task	課題(長編)
+	-20001	task	課題(中編)
+	-4001	task	課題(短編)
+	-801	task	課題(SS)
+	-1	task	課題(掌編)
+	0	none	白紙
+1		palm	掌編
+801		ss	SS
+4001		short	短編
+20001		middle	中編
+100001		long	長編
+500001		huge	巨編
+---
+```
+
+```javascript
+[
+  {i:0, range:new Range(-Infinity,0), key:'none', value='無'},
+  {i:1, range:new Range(1,800), key:'palm', value='掌編'},
+  {i:2, range:new Range(801,4000), key:'ss', value='SS'},
+  {i:3, range:new Range(4001,20000), key:'short', value='短編'},
+  {i:4, range:new Range(20001,100000), key:'middle', value='中編'},
+  {i:5, range:new Range(100001,500000), key:'long', value='長編'},
+  {i:6, range:new Range(500001,Infinity), key:'huge', value='巨編'},
+]
+```
+```javascript
+const sec = textbase.deserialize('section.novelScale -0:none=無 1-:palm=掌編 801-:ss=SS 4001-:short:短編 20001-:middle=中編 100001-:long=長編 500001-:huge:巨編')
+sec[0]   // {i:0, range:new Range(-Infinity,0), key:'none', value='無'}
+sec.palm // {i:1, range:new Range(1,800), key:'palm', value='掌編'}
+```
+```
+class Section {
+  static keys(sct) {return sct.map(s=>s.key)}
+  static values(sct) {return sct.map(s=>s.value)}
+  static ranges(sct) {return sct.map(s=>s.range)}
+  static keys(sct) {return sct.map(s=>s.key)}
+}
+```
