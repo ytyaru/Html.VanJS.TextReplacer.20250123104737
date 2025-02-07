@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title></title>
+<meta name="description" content="">
+<meta name="author" content="ytyaru">
+<link rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/deed.ja">
+<link rel="icon" href="../asset/image/author/ytyaru.png">
+<link rel="stylesheet" href="css/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../lib/van/1.2.6/nomodule.min.js"></script>
+<script src="../lib/util/type.js"></script>
+<script src="../lib/util/test/assertion.js"></script>
+<script src="../js/footer.js"></script>
+<script src="js/range.js"></script>
+<!--<script src="js/ary.js"></script>-->
+<script src="js/textbase.js"></script>
+<script src="js/block-text/fence-block-content-parser/array-block-parser.js"></script>
+<script src="js/block-text/fence-block-content-parser/object-block-parser.js"></script>
+<script src="js/block-text/fence-block-content-parser/table-block-parser.js"></script>
+<script src="js/block-text/fence-block-content-parser-manager.js"></script>
+<script src="js/block-text/fence-block-parser.js"></script>
+<script src="js/block-text/line-parser.js"></script>
+<!--<script src="js/block-text/text-block-parser.js"></script>-->
+<script src="js/block-text/parser.js"></script>
+<!--<script src="js/main.js"></script>-->
+<script>
+window.addEventListener('DOMContentLoaded', async(event) => {
+    const script = `ary.names1 Yamada Suzuki Tanaka
+---ary.names2
+Yamada Suzuki
+Tanaka
+---
+---ary.names3
+Yamada Suzuki
+Tanaka
+---ary.names4
+Yamada Suzuki
+Tanaka
+---ary.names5
+Yamada Suzuki
+Tanaka
+---
+obj.yamada1 id 0 name Yamada age 12
+---obj.yamada2
+id	0	name	Yamada
+age	12
+---obj.yamada3
+id	0	name	Yamada
+age	12
+---
+tbl.humans1(id:i,name:s,age:i) 0 Yamada 12 1 Suzuki 24 2 Tanaka 36
+---tbl.humans2
+id	name	age
+0	Yamada	12
+1	Suzuki	24
+2	Tanaka	36
+---tbl.humans3
+id	name	age
+:i	s	i
+0	Yamada	12
+1	Suzuki	24
+2	Tanaka	36
+---tbl.humans4
+id	name	age
+=0	Yamada	12
+		
+1	Suzuki	24
+2	Tanaka	36
+---tbl.humans5
+id	name	age
+:i	s	i
+=0	Yamada	12
+		
+1	Suzuki	24
+2	Tanaka	36
+---tbl.humans6
+id	name	age
+:i	s	i
+=0	Suzuki	36
+	Yamada	12
+1		24
+2	Tanaka	
+---
+`;
+    const blocks = new BlockText().parse(script);
+    console.log(blocks);
+});
+</script>
+</head>
+<body>
+    <main></main>
+    <footer></footer>
+</body>
+</html>
+<!-- https://coliss.com/articles/build-websites/operation/work/html-template-for-web-apps-or-sites.html -->
+<!-- https://coliss.com/articles/build-websites/operation/work/html5-template-for-2018.html -->
