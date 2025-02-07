@@ -110,3 +110,53 @@ class Section {
   static keys(sct) {return sct.map(s=>s.key)}
 }
 ```
+
+## Enum
+
+　Enumは配列、オブジェクト、Map、Setと違い、キーが整数と文字列の二種類ある。また、他のコレクション型と同様、`length`/`size`, `keys`, `values`のように全体を取得できる。他にも型一致なども可能。
+
+```javascript
+class Enum {
+    static new () {}
+    static is(e) {} // 型と値が一致する
+    static isType(e) {} // 型のみ一致する（値は不一致でも真を返す）
+    static getType(e) {}
+    static get(v) {}
+    static getIndex(v) {}
+    static getKey(v) {}
+    static getValue(v) {}
+    constructor(id, valueType, kvs) {//name:Enum型インスタンスを識別する名前, valueType:値の型, kvs:要素のキーと値
+
+    }
+}
+```
+```javascript
+[
+  {i:0, key:'', value:''}
+]
+```
+
+```javascript
+const fileOpenModes = Enum.new('FileOpenModes', 'int', 'read write append')
+Enum.ids // ['FileOpenModes']
+Enum.has(fileOpenModes) // Enum.ids.includes(fileOpenModes.id)
+Enum.isType('FileOpenModes', fileOpenModes)
+Enum.isType('FileOpenModes', fileOpenModes.read)
+
+fileOpenModes.read    // Enumインスタンス?
+fileOpenModes.write   // Enumインスタンス?
+fileOpenModes.append  // Enumインスタンス?
+
+const mode = fileOpenModes.read
+Enum.isType('FileOpenModes', fileOpenModes)
+Enum.is('FileOpenModes.read', fileOpenModes.read)
+
+fileOpenModes.read === fileOpenModes.read   // 0 === 0
+fileOpenModes.read < fileOpenModes.write    // 0 < 1    Enumインスタンスだと <,> で比較できない
+fileOpenModes.write < fileOpenModes.append  // 1 < 2    Int型なら可能。でもEnum型判定ができなくなる
+
+Enum.getEnum('FileOpenModes')
+Enum.getValue('FileOpenModes.read')
+
+Enum.isType('FileOpenModes', fileOpenModes)
+```
