@@ -57,19 +57,24 @@ class TableBlockParser { // フェンスブロック"""author=著者名等をHTM
         const defTxts = 0 < defIdx ? tsv[defIdx] : Array.of(...tsv[0]).map(v=>null);
         console.log(typeTxts , defTxts)
         if (typeTxts.length !== defTxts.length) {throw new TypeError(`型と初期値の列数が一致しません。:${typeTxts.length},${defTxts.length}}`)}
-        const rows = tsv.slice([Math.max(0, typeIdx, defIdx)+1])
-        //const types = typeTxts.map((t,i)=>textbase.TypeParser.getType(t, defTxts[i]))
-        const types = typeTxts.map((t,i)=>{
-            const type = textbase.TypeParser.getType(t, defTxts[i])
-            return type ? type : this.#getLiteralType(rows, i, defTxts)
-        })
+        const rowTxts = tsv.slice([Math.max(0, typeIdx, defIdx)+1])
+        const types = typeTxts.map((t,i)=>textbase.TypeParser.getType(t,defTxts[i]) ?? this.#getLiteralType(rowTxts,i,defTxts[i]))
         console.log(types)
         //rows.map((r,i)=>types[i%types.length].deserialize(r))
-        return rows.map(r=>r.map((c,i)=>types[i%types.length].deserialize(c)))
+        //return rows.map(r=>r.map((c,i)=>types[i%types.length].deserialize(c)))
+        //return {cols:types, rows:rows.map(r=>r.map((c,i)=>types[i%types.length].deserialize(c)))}
+        //return {cols:this.#getCols(tsv[0], types),rows:rows.map(r=>r.map((c,i)=>types[i%types.length].deserialize(c)))}
+        const cols = this.#getCols(tsv[0], types)
+        const rows = rowTxts.map(r=>r.map((c,i)=>types[i%types.length].deserialize(c)))
+        return {
+            cols:cols,
+            rows:rows,
+            objs:rows.reduce((a,r,i)=>{a.push(cols.reduce((o,col,c)=>Object.assign(o,{[col.key]:r[c]}),{}));return a}, [])}
     }
+    #getCols(keys, types) {return keys.reduce((a,k,i)=>{a.push({key:k, type:types[i]});return a;},[])}
     #getLiteralType(rows, colIdx, defTxts) {
         for (let row of rows) {
-            if (''!==row[colIdx]) {return textbase.LiteralType.get(row[colIdx])}
+            if (''!==row[colIdx]) {return textbase.LiteralType.get(row[colIdx],defTxts)}
         }
         return textbase.StringDataType(defTxts[i])
     }

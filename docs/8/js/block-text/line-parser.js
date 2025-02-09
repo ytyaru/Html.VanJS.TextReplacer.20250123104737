@@ -375,20 +375,20 @@ class Splitter {
     }
 }
 class LiteralType {//リテラル値から型を推論する
-    static get(text) {
-             if (/^[_v]+$/.test(text)){return new BooleanDataType()}
+    static get(text, defTxt) {
+             if (/^[_v]+$/.test(text)){return new BooleanDataType(defTxt)}
 //        else if (/^(\d+)?\.\d+$/.test(text)){return new FloatDataType()}
-        else if (/^(-)?(\d+)?\.\d+$/.test(text)){return new FloatDataType()}
-        else if (/^(-)?\d+$/.test(text)){return new IntDataType(10)}
-        else if (/^0b[0-1]+$/.test(text)){return new IntDataType(2)}
-        else if (/^0o[0-7]+$/.test(text)){return new IntDataType(8)}
-        else if (/^0x[0-9a-fA-F]+$/.test(text)){return new IntDataType(16)}
-        else if (/^0z[0-9a-zA-Z]+$/.test(text)){return new IntDataType(36)}
-        else if (/^(-)?\d+n$/.test(text)){return new BigIntDataType(10)}
-        else if (/^0B[0-1]+$/.test(text)){return new BigIntDataType(2)}
-        else if (/^0O[0-7]+$/.test(text)){return new BigIntDataType(8)}
-        else if (/^0X[0-9a-fA-F]+$/.test(text)){return new BigIntDataType(16)}
-        else {return new StringDataType()}
+        else if (/^(-)?(\d+)?\.\d+$/.test(text)){return new FloatDataType(defTxt)}
+        else if (/^(-)?\d+$/.test(text)){return new IntDataType(10,defTxt)}
+        else if (/^0b[0-1]+$/.test(text)){return new IntDataType(2,defTxt)}
+        else if (/^0o[0-7]+$/.test(text)){return new IntDataType(8,defTxt)}
+        else if (/^0x[0-9a-fA-F]+$/.test(text)){return new IntDataType(16,defTxt)}
+        else if (/^0z[0-9a-zA-Z]+$/.test(text)){return new IntDataType(36,defTxt)}
+        else if (/^(-)?\d+n$/.test(text)){return new BigIntDataType(10,defTxt)}
+        else if (/^0B[0-1]+$/.test(text)){return new BigIntDataType(2,defTxt)}
+        else if (/^0O[0-7]+$/.test(text)){return new BigIntDataType(8,defTxt)}
+        else if (/^0X[0-9a-fA-F]+$/.test(text)){return new BigIntDataType(16,defTxt)}
+        else {return new StringDataType(defTxt)}
     }
 }
 class Ktv {// KeyTypeValue
