@@ -11,8 +11,48 @@
 
 独自コレクション型|要約
 ------------------|----
+`NamedArray(`na`)`|名前付き配列。キーとして`0`から始まる整数以外に一意の識別子からも参照できる。その関係上個数固定。(Tupleと同じ?)
 `Tuple`(`tpl`)|固定配列。配列だが名前や型を割当可。要素数はその定義数で固定される。
 `Table`(`tbl`)|表。列と行を持つ。列は順、名、型、値を持つ。行は各列の値を持つ配列。
+
+## Namespace
+
+　名前空間。親子関係を持つオブジェクト。所定の名前以外を参照すると例外発生する。
+
+```javascript
+class Namespace {
+    static #NOT_CALL_CONSTRUCTOR = 'Namespaceのコンストラクタは呼出禁止です。代わりにNamespace.new()してください。'
+    static new(text) {return new Namespace(text, this.#NOT_CALL_CONSTRUCTOR)}
+    constructor(nsTxt,from) {//nsTxt:'parent.child'または'parent\n\tchild'のように表現する
+        if (this.#NOT_CALL_CONSTRUCTOR!==from){throw new TypeError(this.#NOT_CALL_CONSTRUCTOR)}
+        this._obj = {} // 名前空間の実態。オブジェクトのネスト構造で表す。
+        return new Proxy(this.#target(), this.#handler()); // 指定した名前以外にアクセスしたら例外発生する
+    }
+    #validName(name) {return /^[a-zA-Z][a-zA-Z0-9]+$/.test(name)} // obj['key']でなくobj.keyで参照可能かつキャメルケースのみ
+    static has(ns, name) {}
+    static hasOwn(ns, name) {}
+}
+```
+```
+A.a.one
+A.a.two
+A.b.one
+A.b.two
+```
+```
+{
+  A:{
+    a:{
+      one:null,
+      two:null
+    },
+    b:{
+      one:null,
+      two:null
+    }
+  }
+}
+```
 
 ## Range
 

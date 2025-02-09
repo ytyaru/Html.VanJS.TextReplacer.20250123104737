@@ -377,7 +377,6 @@ class Splitter {
 class LiteralType {//リテラル値から型を推論する
     static get(text, defTxt) {
              if (/^[_v]+$/.test(text)){return new BooleanDataType(defTxt)}
-//        else if (/^(\d+)?\.\d+$/.test(text)){return new FloatDataType()}
         else if (/^(-)?(\d+)?\.\d+$/.test(text)){return new FloatDataType(defTxt)}
         else if (/^(-)?\d+$/.test(text)){return new IntDataType(10,defTxt)}
         else if (/^0b[0-1]+$/.test(text)){return new IntDataType(2,defTxt)}
